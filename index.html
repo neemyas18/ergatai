@@ -1,0 +1,476 @@
+<title>Ergatai</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,700..900&family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@1,6..72,400..500&display=swap">
+<style>
+/* Concept: cinco cenas em tela cheia, como os slides do PDF. Cada cena tem camadas de profundidade
+   (graos de trigo e brasas desfocados) que andam em velocidades diferentes da rolagem. */
+:root {
+  --ink: #182b23;
+  --ink-soft: #20382d;
+  --paper: #f0ebdd;
+  --gold: #d4a85c;
+  --leaf: #25382c;
+  --sage: #8fa388;
+  --f-display: 'Archivo', 'Arial Black', 'Helvetica Neue', Arial, sans-serif;
+  --f-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --f-serif: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --ease: cubic-bezier(.2, .7, .2, 1);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-snap-type: y proximity; }
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--f-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+#deck { position: relative; overflow: clip; }
+
+/* ---------- cena ---------- */
+.slide { position: relative; overflow-x: clip; scroll-snap-align: start; min-height: 100svh; }
+.tone-dark {
+  background: var(--ink);
+  --fg: var(--paper); --fg2: rgba(240, 235, 221, .74); --acc: var(--gold);
+  --rule-t: var(--gold); --rule-b: rgba(240, 235, 221, .42);
+  --pc1: #d9ad5e; --pc2: #f0e6cf; --pc3: #93a98a;
+}
+.tone-light {
+  background: var(--paper);
+  --fg: var(--leaf); --fg2: #3b4f43; --acc: var(--leaf);
+  --rule-t: #bdbaa9; --rule-b: #bdbaa9;
+  --pc1: #bb862c; --pc2: #25382c; --pc3: #7c9262;
+}
+.bg { position: absolute; inset: 0; overflow: hidden; z-index: 0; pointer-events: none; }
+.fg { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+.frame {
+  position: relative; z-index: 2;
+  min-height: 100svh;
+  display: flex; flex-direction: column;
+  padding-block: 22px 20px;
+  padding-left: max(22px, env(safe-area-inset-left, 0px));
+  padding-right: max(22px, env(safe-area-inset-right, 0px));
+  max-width: 76rem; margin-inline: auto;
+  color: var(--fg);
+}
+.top, .bot {
+  display: flex; align-items: center; gap: .7em;
+  font-size: .68rem; font-weight: 700; letter-spacing: .17em; text-transform: uppercase;
+  position: relative;
+}
+.top { color: var(--acc); padding-bottom: 14px; }
+.top i { font-style: normal; opacity: .8; }
+.bot { color: var(--fg2); padding-top: 14px; justify-content: space-between; font-size: .64rem; }
+.no { font-variant-numeric: tabular-nums; letter-spacing: .12em; }
+.top::after, .bot::before {
+  content: ""; position: absolute; left: 0; right: 0; height: 1px;
+  transform-origin: left center; transition: transform 1.4s var(--ease) .1s;
+}
+.top::after { bottom: 0; background: var(--rule-t); }
+.bot::before { top: 0; background: var(--rule-b); transform-origin: right center; }
+.js .slide:not(.in) .top::after, .js .slide:not(.in) .bot::before { transform: scaleX(0); }
+
+.main {
+  flex: 1; display: flex; flex-direction: column; justify-content: center;
+  gap: clamp(1.1rem, 3.2svh, 1.9rem);
+  padding-block: clamp(2rem, 7svh, 4.5rem);
+  max-width: 54rem; width: 100%;
+}
+
+/* ---------- tipografia ---------- */
+h1, h2, p, ol { margin: 0; }
+h2 {
+  font-family: var(--f-display); font-weight: 800; font-stretch: 108%;
+  font-size: clamp(2rem, 8.4vw, 3.9rem); line-height: 1.04; letter-spacing: -.012em;
+  text-wrap: balance; color: var(--fg);
+}
+.body { font-size: clamp(1.06rem, 4.1vw, 1.42rem); line-height: 1.58; max-width: 36em; color: var(--fg2); }
+.body strong, .strong { color: var(--fg); font-weight: 700; }
+.label { font-size: .7rem; font-weight: 700; letter-spacing: .17em; text-transform: uppercase; color: var(--acc); }
+.serif { font-family: var(--f-serif); font-style: italic; font-weight: 400; }
+
+/* ---------- 01 capa ---------- */
+.greek { font-size: clamp(1rem, 3.6vw, 1.35rem); font-weight: 500; letter-spacing: .08em; color: var(--gold); }
+.title {
+  font-family: var(--f-display); font-weight: 900; font-stretch: 112%;
+  font-size: clamp(2.6rem, 14.4vw, 7.6rem); line-height: .94; letter-spacing: -.015em;
+  white-space: nowrap; margin-top: -.4rem; color: var(--paper);
+}
+.title .dot { color: var(--gold); }
+.ltr { display: inline-block; }
+.tag { font-size: clamp(1.7rem, 6.4vw, 2.8rem); line-height: 1.1; color: var(--paper); }
+.ref { font-size: .72rem; font-weight: 700; letter-spacing: .17em; color: var(--gold); margin-top: clamp(.6rem, 3svh, 1.8rem); }
+.s1 .main { padding-bottom: clamp(30svh, 40svh, 46svh); }
+.cue { position: absolute; left: max(22px, env(safe-area-inset-left, 0px)); bottom: 62px; width: 1px; height: 46px; background: rgba(240, 235, 221, .22); overflow: hidden; }
+.cue::after { content: ""; position: absolute; left: 0; top: -14px; width: 1px; height: 14px; background: var(--gold); animation: cue 2.4s var(--ease) infinite; }
+@keyframes cue { to { transform: translateY(66px); } }
+
+.field {
+  position: absolute; right: 3vw; bottom: -22svh; height: min(74svh, 640px);
+  display: flex; align-items: flex-end; gap: clamp(8px, 2.2vw, 22px); z-index: 1;
+  --fade: 29%;
+  -webkit-mask-image: linear-gradient(to top, transparent var(--fade), #000 calc(var(--fade) + 9%));
+  mask-image: linear-gradient(to top, transparent var(--fade), #000 calc(var(--fade) + 9%));
+}
+.stalk { height: 100%; width: 100%; overflow: visible; fill: none; stroke: var(--c, var(--gold)); stroke-width: 1.3px; transform-origin: 50% 100%;
+  animation: sway var(--sw, 7s) ease-in-out var(--swd, 0s) infinite alternate; }
+.stalk * { vector-effect: non-scaling-stroke; }
+@keyframes sway { from { rotate: -1.3deg; } to { rotate: 1.6deg; } }
+.stalk-w { will-change: translate; }
+.stem, .leaf { stroke-dasharray: 1; }
+.js:not(.rm) .stem, .js:not(.rm) .leaf { stroke-dashoffset: 1; }
+.go .stem { animation: draw 2.4s var(--ease) var(--sd, 0s) both; }
+.go .leaf { animation: draw 1.2s var(--ease) calc(var(--sd, 0s) + .7s + var(--i) * .085s) both; }
+@keyframes draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+
+/* ---------- 02 ---------- */
+.ghost {
+  position: absolute; right: -4vw; bottom: 4%;
+  font-family: var(--f-display); font-weight: 900; font-size: clamp(8rem, 27vw, 24rem); line-height: 1; white-space: nowrap;
+  color: rgba(37, 56, 44, .07); filter: blur(2px);
+}
+.quote { background: var(--ink); color: var(--paper); padding: clamp(1.2rem, 4vw, 1.9rem) clamp(1.2rem, 4.4vw, 2.2rem); border-radius: 10px; max-width: 40rem; }
+.quote p { font-size: clamp(1.4rem, 5.6vw, 2.2rem); line-height: 1.25; text-wrap: balance; }
+.quote .label { display: block; margin-top: 1.1rem; color: var(--gold); }
+.note { font-size: clamp(.82rem, 3.2vw, 1rem); font-weight: 700; display: flex; flex-direction: column; gap: .35em 1em; color: var(--fg); }
+.note .sep { display: none; }
+
+/* ---------- 03 ---------- */
+.steps { list-style: none; padding: 0; display: grid; }
+.steps li {
+  display: grid; grid-template-columns: 2.6rem 1fr; align-items: baseline; column-gap: .6rem; row-gap: .1rem;
+  padding: clamp(.8rem, 2.6svh, 1.2rem) 0; position: relative;
+}
+.steps li::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: rgba(240, 235, 221, .26); transform-origin: left; transition: transform 1.2s var(--ease) var(--d, 0s); }
+.js .steps li.pre::after { transform: scaleX(0); }
+.n { font-size: .72rem; font-weight: 700; letter-spacing: .1em; color: var(--gold); font-variant-numeric: tabular-nums; }
+.t { font-family: var(--f-display); font-weight: 800; font-stretch: 104%; font-size: clamp(1.3rem, 5.6vw, 2.2rem); letter-spacing: .005em; }
+.sub { grid-column: 2; font-size: clamp(.95rem, 3.6vw, 1.15rem); color: var(--fg2); }
+.steps .last .t { color: var(--gold); }
+.closing { font-size: clamp(1.15rem, 4.4vw, 1.6rem); color: var(--fg2); margin-top: .4rem; }
+@media (min-width: 720px) {
+  .steps li { grid-template-columns: 3.4rem 1.35fr 1fr; }
+  .sub { grid-column: 3; }
+}
+
+/* ---------- 04 / 05 ---------- */
+.lit .w { transition: opacity .25s linear; }
+.camp { font-family: var(--f-display); font-weight: 800; font-stretch: 106%; font-size: clamp(1.9rem, 8.2vw, 3.7rem); line-height: 1.08; letter-spacing: -.01em; text-wrap: balance; color: var(--paper); }
+.camp .fire { font-style: normal; color: var(--gold); text-shadow: 0 0 .7em rgba(212, 168, 92, .5); }
+.small { font-size: .9rem; color: var(--fg2); }
+.glow { position: absolute; inset: 0; background: radial-gradient(70% 55% at 50% 108%, rgba(232, 146, 52, .40), rgba(212, 168, 92, .16) 42%, transparent 72%); opacity: var(--glow, 0); }
+.s5 .main { gap: clamp(1.1rem, 2.6svh, 1.6rem); }
+.s5 .camp-box { display: grid; gap: .7rem; margin-top: clamp(.8rem, 4svh, 2.2rem); }
+
+/* ---------- partículas ---------- */
+.lay { position: absolute; left: 0; right: 0; top: -100svh; bottom: -100svh; pointer-events: none; will-change: translate; }
+.slide:not(.live) .lay { display: none; }
+.pt { position: absolute; width: var(--s); height: calc(var(--s) * var(--ar, 2.3)); background: radial-gradient(ellipse at 36% 28%, rgba(255, 250, 235, .55), transparent 42%), var(--c);
+  border-radius: 50% 50% 50% 50% / 64% 64% 36% 36%; opacity: var(--o); filter: blur(var(--b)); rotate: var(--r);
+  animation: drift var(--dur) ease-in-out var(--dl) infinite alternate; }
+.pt.e { --ar: 1; border-radius: 50%; background: radial-gradient(circle, #ffe3a0 0, var(--c) 32%, transparent 70%); animation: rise var(--dur) ease-out var(--dl) infinite; }
+@keyframes drift { from { transform: translate3d(0, 0, 0) rotate(0deg); } to { transform: translate3d(var(--dx), var(--dy), 0) rotate(var(--dr)); } }
+@keyframes rise { 0% { transform: translate3d(0, 0, 0); opacity: 0; } 18% { opacity: var(--o); } 100% { transform: translate3d(var(--dx), -34svh, 0); opacity: 0; } }
+
+/* ---------- entrada e progresso ---------- */
+.rv { transition: opacity 1s var(--ease) var(--d, 0s), transform 1s var(--ease) var(--d, 0s), filter 1s var(--ease) var(--d, 0s); }
+.rv.pre { opacity: 0; transform: translate3d(0, 26px, 0); filter: blur(10px); }
+.ltr.pre { transform: translate3d(0, .42em, 0) rotate(5deg); filter: blur(14px); }
+.quote.pre { transform: translate3d(0, 40px, 0) scale(.97); }
+[data-depth] { will-change: translate; }
+#prog { position: fixed; top: env(safe-area-inset-top, 0px); left: 0; right: 0; height: 3px; background: var(--gold); transform-origin: left; transform: scaleX(0); z-index: 30; pointer-events: none; }
+
+@media (min-width: 800px) {
+  .field { bottom: -7svh; height: min(80svh, 660px); right: 5vw; --fade: 11%; }
+  .note { flex-direction: row; }
+  .note .sep { display: inline; }
+  .s1 .main { padding-bottom: clamp(2rem, 7svh, 4.5rem); }
+  .cue { bottom: 66px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  html { scroll-snap-type: none; }
+}
+</style>
+<script>document.documentElement.classList.add('js');</script>
+
+<div id="prog"></div>
+<main id="deck">
+
+  <!-- 01 -->
+  <section class="slide tone-dark s1" id="s1" data-ember=".3">
+    <div class="bg"><div class="field" id="field"></div></div>
+    <div class="frame">
+      <header class="top"><span>Ignite Conference</span><i>/</i><span>Proposta de tema</span></header>
+      <div class="main">
+        <p class="greek rv" lang="el" style="--d:.05s" data-depth=".05">ΕΡΓΑΤΑΙ</p>
+        <h1 class="title" id="ttl" data-depth=".07">ERGATAI.</h1>
+        <p class="tag serif rv" style="--d:.9s" data-depth=".04">A seara é grande.</p>
+        <p class="ref rv" style="--d:1.05s" data-depth=".03">MATEUS 9:37–38</p>
+      </div>
+      <i class="cue" aria-hidden="true"></i>
+      <footer class="bot"><span>Conceito</span><span class="no">01 / 05</span></footer>
+    </div>
+    <div class="fg"></div>
+  </section>
+
+  <!-- 02 -->
+  <section class="slide tone-light s2" id="s2" data-ember=".08">
+    <div class="bg"><span class="ghost" data-depth="-.3" aria-hidden="true">ἐργάται</span></div>
+    <div class="frame">
+      <header class="top"><span>Ignite Conference</span><i>/</i><span>Proposta de tema</span></header>
+      <div class="main">
+        <h2 class="rv">O que significa ERGATAI?</h2>
+        <p class="body rv" style="--d:.1s">Ergátai (ἐργάται) é o plural de ergátēs: trabalhadores, operários ou obreiros. Em Mateus 9:37, Jesus usa a palavra para falar dos trabalhadores da seara.</p>
+        <blockquote class="quote rv" style="--d:.2s;margin:0" data-depth=".06">
+          <p class="serif">“A seara, na verdade, é grande, mas os trabalhadores são poucos.”</p>
+          <span class="label">Mateus 9:37</span>
+        </blockquote>
+        <p class="note rv" style="--d:.3s"><span>Ekballo: a ação de enviar.</span><span class="sep" aria-hidden="true">•</span><span>Ergatai: aqueles que trabalham.</span></p>
+      </div>
+      <footer class="bot"><span>Fundamento bíblico</span><span class="no">02 / 05</span></footer>
+    </div>
+    <div class="fg"></div>
+  </section>
+
+  <!-- 03 -->
+  <section class="slide tone-dark s3" id="s3" data-ember=".1">
+    <div class="bg"></div>
+    <div class="frame">
+      <header class="top"><span>Ignite Conference</span><i>/</i><span>Proposta de tema</span></header>
+      <div class="main">
+        <h2 class="rv">Do chamado ao envio.</h2>
+        <ol class="steps">
+          <li class="rv" style="--d:.1s"><b class="n">01</b><span class="t">THE CALL MATTER</span><span class="sub">O chamado</span></li>
+          <li class="rv" style="--d:.22s"><b class="n">02</b><span class="t">MARCADOS</span><span class="sub">A identidade</span></li>
+          <li class="rv" style="--d:.34s"><b class="n">03</b><span class="t">INABALÁVEIS</span><span class="sub">A perseverança</span></li>
+          <li class="rv last" style="--d:.46s"><b class="n">04</b><span class="t">ERGATAI</span><span class="sub">A missão</span></li>
+        </ol>
+        <p class="closing serif rv" style="--d:.6s">Chamados. Marcados. Firmes. Agora, enviados.</p>
+      </div>
+      <footer class="bot"><span>Continuidade da narrativa</span><span class="no">03 / 05</span></footer>
+    </div>
+    <div class="fg"></div>
+  </section>
+
+  <!-- 04 -->
+  <section class="slide tone-light s4" id="s4" data-ember=".08">
+    <div class="bg"></div>
+    <div class="frame">
+      <header class="top"><span>Ignite Conference</span><i>/</i><span>Proposta de tema</span></header>
+      <div class="main">
+        <h2 class="rv">Seja a resposta da oração.</h2>
+        <p class="body lit">Em Mateus 9:38, Jesus ensina os discípulos a pedirem ao Senhor da seara que envie trabalhadores. Em Mateus 10:1–5, ele chama e envia os doze.</p>
+        <p class="body lit">A proposta é despertar uma geração para uma fé que não termina no culto: uma vida de serviço, evangelização e participação na missão de Cristo.</p>
+        <p class="body strong lit">O Senhor é dono da seara. Nós somos seus trabalhadores.</p>
+      </div>
+      <footer class="bot"><span>Mensagem da conferência</span><span class="no">04 / 05</span></footer>
+    </div>
+    <div class="fg"></div>
+  </section>
+
+  <!-- 05 -->
+  <section class="slide tone-dark s5" id="s5" data-ember=".85">
+    <div class="bg"><div class="glow"></div></div>
+    <div class="frame">
+      <header class="top"><span>Ignite Conference</span><i>/</i><span>Proposta de tema</span></header>
+      <div class="main">
+        <h2 class="rv">Uma chama que se espalha.</h2>
+        <p class="body rv" style="--d:.1s">Uma identidade inspirada na colheita: terra, trigo, sementes, mãos e campos. Tons terrosos, verde profundo e dourado, com tipografia forte e textura orgânica.</p>
+        <div class="camp-box">
+          <span class="label rv" style="--d:.15s">Frase de campanha</span>
+          <p class="camp lit">O <em class="fire">fogo</em> que nos alcançou não pode terminar em nós.</p>
+        </div>
+        <p class="small rv" style="--d:.2s">Proposta conceitual para avaliação da liderança.</p>
+      </div>
+      <footer class="bot"><span>Direção criativa</span><span class="no">05 / 05</span></footer>
+    </div>
+    <div class="fg"></div>
+  </section>
+
+</main>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce) root.classList.add('rm');
+  var NS = 'http://www.w3.org/2000/svg';
+  function rng(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
+
+  /* ---- espigas da capa ---- */
+  var stalks = [
+    { tip: 190, n: 8,  c: 'var(--sage)', d: -.16, blur: 1.6, op: .65, sw: 8.5, swd: -2, sd: .55 },
+    { tip: 120, n: 11, c: 'var(--gold)', d: .03,  blur: 0,   op: 1,   sw: 7,   swd: -4, sd: .25 },
+    { tip: 160, n: 9,  c: 'var(--sage)', d: -.07, blur: .8,  op: .85, sw: 9,   swd: -1, sd: .4 },
+    { tip: 80,  n: 13, c: 'var(--gold)', d: .15,  blur: 0,   op: 1,   sw: 6.2, swd: -3, sd: 0 }
+  ];
+  var field = document.getElementById('field');
+  stalks.forEach(function (o) {
+    var wrap = document.createElement('div');
+    wrap.className = 'stalk-w';
+    wrap.setAttribute('data-depth', o.d);
+    wrap.style.cssText = 'height:100%;aspect-ratio:64/440;opacity:' + o.op + (o.blur ? ';filter:blur(' + o.blur + 'px)' : '');
+    var s = document.createElementNS(NS, 'svg');
+    s.setAttribute('viewBox', '0 0 64 440');
+    s.setAttribute('class', 'stalk');
+    s.setAttribute('aria-hidden', 'true');
+    s.style.cssText = '--c:' + o.c + ';--sw:' + o.sw + 's;--swd:' + o.swd + 's;--sd:' + o.sd + 's';
+    var h = '<path class="stem" pathLength="1" d="M32 ' + o.tip + ' V 470"/>';
+    h += '<ellipse class="leaf" pathLength="1" style="--i:' + (o.n + 1) + '" cx="32" cy="' + o.tip + '" rx="5.5" ry="13"/>';
+    for (var i = 0; i < o.n; i++) {
+      var y = o.tip + 20 + i * 21, k = o.n - i;
+      h += '<ellipse class="leaf" pathLength="1" style="--i:' + k + '" cx="22.5" cy="' + y + '" rx="11.5" ry="6.2" transform="rotate(32 22.5 ' + y + ')"/>';
+      h += '<ellipse class="leaf" pathLength="1" style="--i:' + k + '" cx="41.5" cy="' + y + '" rx="11.5" ry="6.2" transform="rotate(-32 41.5 ' + y + ')"/>';
+    }
+    s.innerHTML = h;
+    wrap.appendChild(s);
+    field.appendChild(wrap);
+  });
+
+  /* ---- título em letras ---- */
+  var ttl = document.getElementById('ttl');
+  var txt = ttl.textContent;
+  ttl.setAttribute('aria-label', txt);
+  ttl.textContent = '';
+  txt.split('').forEach(function (ch, i) {
+    var sp = document.createElement('span');
+    sp.className = 'ltr rv' + (ch === '.' ? ' dot' : '');
+    sp.setAttribute('aria-hidden', 'true');
+    sp.style.setProperty('--d', (0.15 + i * 0.075).toFixed(3) + 's');
+    sp.textContent = ch;
+    ttl.appendChild(sp);
+  });
+
+  /* ---- camadas de profundidade ---- */
+  var LAY = [
+    { host: 'bg', n: 26, d: -.5,  s: [5, 11],    b: [1.2, 2.4],  o: [.3, .55],  ar: 2.3 },
+    { host: 'bg', n: 15, d: -.22, s: [11, 22],   b: [3.5, 6],    o: [.3, .55],  ar: 2.3 },
+    { host: 'fg', n: 8,  d: .5,   s: [34, 68],   b: [10, 16],    o: [.16, .3],  ar: 1.9 },
+    { host: 'fg', n: 4,  d: 1.05, s: [90, 150],  b: [22, 32],    o: [.1, .17],  ar: 1.7 }
+  ];
+  var slides = [].map.call(document.querySelectorAll('.slide'), function (el, si) {
+    var r = rng(1000 + si * 97), ember = parseFloat(el.getAttribute('data-ember') || '.1');
+    var S = { el: el, layers: [], par: [], words: [], live: false, h: 0 };
+    LAY.forEach(function (L) {
+      var lay = document.createElement('div');
+      lay.className = 'lay';
+      var out = '';
+      for (var i = 0; i < L.n; i++) {
+        var e = r() < ember, size = L.s[0] + r() * (L.s[1] - L.s[0]);
+        var col = r(); col = col < .6 ? 'var(--pc1)' : col < .8 ? 'var(--pc2)' : 'var(--pc3)';
+        out += '<i class="pt' + (e ? ' e' : '') + '" style="left:' + (r() * 104 - 2).toFixed(1) + '%;top:' + (r() * 100).toFixed(1) + '%;' +
+          '--s:' + size.toFixed(1) + 'px;--ar:' + (e ? 1 : L.ar) + ';--o:' + (L.o[0] + r() * (L.o[1] - L.o[0])).toFixed(2) + ';--b:' + (L.b[0] + r() * (L.b[1] - L.b[0])).toFixed(1) + 'px;' +
+          '--r:' + (r() * 80 - 40).toFixed(0) + 'deg;--c:' + col + ';--dx:' + (r() * 60 - 30).toFixed(0) + 'px;--dy:' + (r() * 60 - 30).toFixed(0) + 'px;--dr:' + (r() * 50 - 25).toFixed(0) + 'deg;' +
+          '--dur:' + (e ? 7 + r() * 9 : 7 + r() * 8).toFixed(1) + 's;--dl:-' + (r() * 14).toFixed(1) + 's"></i>';
+      }
+      lay.innerHTML = out;
+      el.querySelector('.' + L.host).appendChild(lay);
+      S.layers.push({ el: lay, d: L.d });
+    });
+    [].forEach.call(el.querySelectorAll('[data-depth]'), function (p) { S.par.push({ el: p, d: parseFloat(p.getAttribute('data-depth')) }); });
+    S.glow = el.querySelector('.glow');
+    return S;
+  });
+
+  /* ---- texto que acende palavra por palavra ---- */
+  function splitWords(el) {
+    var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), nodes = [], n;
+    while ((n = walker.nextNode())) nodes.push(n);
+    nodes.forEach(function (node) {
+      var frag = document.createDocumentFragment();
+      node.nodeValue.split(/(\s+)/).forEach(function (part) {
+        if (!part) return;
+        if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(' ')); return; }
+        var w = document.createElement('span'); w.className = 'w'; w.textContent = part; frag.appendChild(w);
+      });
+      node.parentNode.replaceChild(frag, node);
+    });
+  }
+  if (!reduce) {
+    slides.forEach(function (S) {
+      var lits = S.el.querySelectorAll('.lit');
+      [].forEach.call(lits, function (l) { splitWords(l); });
+      S.words = [].map.call(S.el.querySelectorAll('.lit .w'), function (w) { return { el: w, y: 0, v: 1 }; });
+    });
+  }
+
+  /* ---- estado e quadro ---- */
+  var vh = window.innerHeight, vw = window.innerWidth, mx = 0, tx = 0, queued = false;
+  var prog = document.getElementById('prog');
+  function measure() {
+    vh = window.innerHeight; vw = window.innerWidth;
+    var sy = window.scrollY;
+    slides.forEach(function (S) {
+      S.words.forEach(function (w) { w.y = w.el.getBoundingClientRect().top + sy; });
+    });
+    request();
+  }
+  function request() { if (!queued) { queued = true; requestAnimationFrame(frame); } }
+  function frame() {
+    queued = false;
+    var sy = window.scrollY, max = document.documentElement.scrollHeight - vh;
+    prog.style.transform = 'scaleX(' + (max > 0 ? clamp(sy / max, 0, 1) : 0).toFixed(4) + ')';
+    mx += (tx - mx) * .08;
+    var more = Math.abs(tx - mx) > .002;
+    slides.forEach(function (S) {
+      var r = S.el.getBoundingClientRect();
+      var live = r.bottom > -vh * .6 && r.top < vh * 1.6;
+      if (live !== S.live) { S.live = live; S.el.classList.toggle('live', live); }
+      if (!live) return;
+      var s = r.top + r.height / 2 - vh / 2;
+      if (!reduce) {
+        S.layers.forEach(function (L) { L.el.style.translate = (-mx * L.d * 36).toFixed(1) + 'px ' + (s * L.d).toFixed(1) + 'px'; });
+        S.par.forEach(function (P) { P.el.style.translate = (-mx * P.d * 24).toFixed(1) + 'px ' + (s * P.d).toFixed(1) + 'px'; });
+        S.words.forEach(function (w) {
+          var t = clamp((vh * .86 - (w.y - sy)) / (vh * .2), 0, 1), v = +(.22 + .78 * t).toFixed(2);
+          if (Math.abs(v - w.v) > .015) { w.v = v; w.el.style.opacity = v; }
+        });
+      }
+      if (S.glow) S.el.style.setProperty('--glow', clamp(1 - s / (vh * .8), 0, 1).toFixed(3));
+    });
+    if (more) request();
+  }
+  window.addEventListener('scroll', request, { passive: true });
+  window.addEventListener('resize', function () { measure(); });
+  if (!reduce) window.addEventListener('pointermove', function (e) {
+    if (e.pointerType === 'touch') return;
+    tx = (e.clientX / vw - .5) * 2; request();
+  }, { passive: true });
+
+  /* ---- entradas ---- */
+  var rvs = [].slice.call(document.querySelectorAll('.rv'));
+  if (!reduce) rvs.forEach(function (el) { el.classList.add('pre'); });
+  var started = false;
+  function start() {
+    if (started) return; started = true;
+    measure();
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (es) {
+        es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.remove('pre'); io.unobserve(e.target); } });
+      }, { rootMargin: '0px 0px -6% 0px', threshold: .01 });
+      rvs.forEach(function (el) { io.observe(el); });
+      var io2 = new IntersectionObserver(function (es) {
+        es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io2.unobserve(e.target); } });
+      }, { threshold: .15 });
+      slides.forEach(function (S) { io2.observe(S.el); });
+    } else {
+      rvs.forEach(function (el) { el.classList.remove('pre'); });
+      slides.forEach(function (S) { S.el.classList.add('in'); });
+    }
+    document.body.classList.add('go');
+    root.classList.add('go');
+  }
+  var ready = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
+  Promise.race([ready, new Promise(function (r) { setTimeout(r, 600); })]).then(function () {
+    requestAnimationFrame(function () { requestAnimationFrame(start); });
+  });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { setTimeout(measure, 50); });
+  request();
+})();
+</script>
